@@ -49,11 +49,11 @@ public class RequestRestAPI {
     public RequestResponseDTO updateRequest(@PathVariable Long id, @RequestBody RequestRequestDTO requestRequestDTO){
         return requestService.updateRequest(id, requestRequestDTO);
     }
-    @PutMapping(path = "/{id}/archive")
+    @PutMapping(path = "/requests/{id}/archive")
     public void archive(@PathVariable Long id){
         requestService.archiveRequest(id);
     }
-    @PutMapping(path = "/{id}/updateStatus/{status}")
+    @PutMapping(path = "/requests/{id}/updateStatus/{status}")
     public void updateStatus(@PathVariable Long id, @PathVariable String status){
         requestService.updateStatusRequest(id, status);
     }
