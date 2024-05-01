@@ -2,6 +2,7 @@ package org.ms.requestmanager.services;
 
 import org.ms.requestmanager.dto.PersonalRequestDTO;
 import org.ms.requestmanager.dto.PersonalResponseDTO;
+import org.ms.requestmanager.entities.AppUser;
 import org.ms.requestmanager.entities.Department;
 import org.ms.requestmanager.entities.Personal;
 import org.ms.requestmanager.entities.TypePersonal;
@@ -26,8 +27,9 @@ public class PersonalServiceImpl implements PersonalService {
     private final RequestRepository requestRepository;
     private final CommentRequestRepository commentRequestRepository;
     private final TransfertRequestRepository transfertRequestRepository;
+    private final AppUserRepository appUserRepository;
 
-    public PersonalServiceImpl(PersonalRepository personalRepository, PersonalMapper personalMapper, TypePersonalRepository typePersonalRepository, DepartmentRepository departmentRepository, UeRepository ueRepository, RequestRepository requestRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository) {
+    public PersonalServiceImpl(PersonalRepository personalRepository, PersonalMapper personalMapper, TypePersonalRepository typePersonalRepository, DepartmentRepository departmentRepository, UeRepository ueRepository, RequestRepository requestRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository, AppUserRepository appUserRepository) {
         this.personalRepository = personalRepository;
         this.personalMapper = personalMapper;
         this.typePersonalRepository = typePersonalRepository;
@@ -36,6 +38,7 @@ public class PersonalServiceImpl implements PersonalService {
         this.requestRepository = requestRepository;
         this.commentRequestRepository = commentRequestRepository;
         this.transfertRequestRepository = transfertRequestRepository;
+        this.appUserRepository = appUserRepository;
     }
 
     @Override
@@ -59,6 +62,14 @@ public class PersonalServiceImpl implements PersonalService {
     @Override
     public PersonalResponseDTO getPersonal(Long personalId) {
         Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("Personal Not Found!");
+        return personalMapper.personalToPersonalResponseDTO(personal);
+    }
+
+    @Override
+    public PersonalResponseDTO getPersonalByUser(String userId) {
+        AppUser appUser = appUserRepository.findById(userId).orElse(null);
+        Personal personal = personalRepository.findByAppUser(appUser);
         if(personal == null) throw new RessourceNotFoundException("Personal Not Found!");
         return personalMapper.personalToPersonalResponseDTO(personal);
     }

@@ -7,6 +7,7 @@ import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.TypeRequestMapper;
 import org.ms.requestmanager.repositories.TypeRequestRepository;
 import org.ms.requestmanager.repositories.RequestRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TypeRequestServiceImpl implements TypeRequestService {
+public class TypeRequestServiceImpl implements TypeRequestService, CommandLineRunner {
     private final TypeRequestRepository typeRequestRepository;
     private final TypeRequestMapper typeRequestMapper;
     private final RequestRepository requestRepository;

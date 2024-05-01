@@ -7,6 +7,7 @@ import java.util.List;
 public interface StudentService {
     StudentResponseDTO saveStudent(StudentRequestDTO studentRequestDTO);
     StudentResponseDTO getStudent(Long studentId);
+    StudentResponseDTO getStudentByUser(String userId);
     List<StudentResponseDTO> getAllStudents();
     List<StudentResponseDTO> getAllStudentsByLevel(Long levelId);
     StudentResponseDTO updateStudent(Long studentId, StudentRequestDTO studentRequestDTO);

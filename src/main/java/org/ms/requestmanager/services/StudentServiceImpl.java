@@ -2,6 +2,7 @@ package org.ms.requestmanager.services;
 
 import org.ms.requestmanager.dto.StudentRequestDTO;
 import org.ms.requestmanager.dto.StudentResponseDTO;
+import org.ms.requestmanager.entities.AppUser;
 import org.ms.requestmanager.entities.Level;
 import org.ms.requestmanager.entities.Student;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
@@ -21,12 +22,14 @@ public class StudentServiceImpl implements StudentService {
     private final StudentMapper studentMapper;
     private final LevelRepository levelRepository;
     private final RequestRepository requestRepository;
+    private final AppUserRepository appUserRepository;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LevelRepository levelRepository, RequestRepository requestRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LevelRepository levelRepository, RequestRepository requestRepository, AppUserRepository appUserRepository) {
         this.studentRepository = studentRepository;
         this.studentMapper = studentMapper;
         this.levelRepository = levelRepository;
         this.requestRepository = requestRepository;
+        this.appUserRepository = appUserRepository;
     }
 
     @Override
@@ -50,6 +53,14 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentResponseDTO getStudent(Long studentId) {
         Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("Student Not Found!");
+        return studentMapper.studentToStudentResponseDTO(student);
+    }
+
+    @Override
+    public StudentResponseDTO getStudentByUser(String userId) {
+        AppUser appUser = appUserRepository.findById(userId).orElse(null);
+        Student student = studentRepository.findByAppUser(appUser);
         if(student == null) throw new RessourceNotFoundException("Student Not Found!");
         return studentMapper.studentToStudentResponseDTO(student);
     }

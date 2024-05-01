@@ -25,6 +25,10 @@ public class StudentRestAPI {
     public StudentResponseDTO getStudent(@PathVariable Long id){
         return studentService.getStudent(id);
     }
+    @GetMapping(path = "/students/ByUser/{id}")
+    public StudentResponseDTO getStudentByUserId(@PathVariable String id){
+        return studentService.getStudentByUser(id);
+    }
     @GetMapping(path = "/students")
     public List<StudentResponseDTO> allStudents(){
         return studentService.getAllStudents();

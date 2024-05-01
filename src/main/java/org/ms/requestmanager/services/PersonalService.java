@@ -7,6 +7,7 @@ import java.util.List;
 public interface PersonalService {
     PersonalResponseDTO savePersonal(PersonalRequestDTO personalRequestDTO);
     PersonalResponseDTO getPersonal(Long personalId);
+    PersonalResponseDTO getPersonalByUser(String userId);
     List<PersonalResponseDTO> getAllPersonals();
     List<PersonalResponseDTO> getAllPersonalsByTypePersonal(Long typePersonalId);
     List<PersonalResponseDTO> getAllPersonalsByDepartment(Long departmentId);

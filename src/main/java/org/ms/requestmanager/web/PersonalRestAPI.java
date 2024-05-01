@@ -25,6 +25,10 @@ public class PersonalRestAPI {
     public PersonalResponseDTO getPersonal(@PathVariable Long id){
         return personalService.getPersonal(id);
     }
+    @GetMapping(path = "/personals/ByUser/{id}")
+    public PersonalResponseDTO getPersonalByUserId(@PathVariable String id){
+        return personalService.getPersonalByUser(id);
+    }
     @GetMapping(path = "/personals")
     public List<PersonalResponseDTO> allPersonals(){
         return personalService.getAllPersonals();

@@ -7,6 +7,7 @@ import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.TypePersonalMapper;
 import org.ms.requestmanager.repositories.TypePersonalRepository;
 import org.ms.requestmanager.repositories.PersonalRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TypePersonalServiceImpl implements TypePersonalService {
+public class TypePersonalServiceImpl implements TypePersonalService, CommandLineRunner {
     private final TypePersonalRepository typePersonalRepository;
     private final TypePersonalMapper typePersonalMapper;
     private final PersonalRepository personalRepository;

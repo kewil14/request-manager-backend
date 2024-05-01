@@ -3,6 +3,7 @@ package org.ms.requestmanager.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ms.requestmanager.entities.AppRole;
 import org.ms.requestmanager.entities.AppUser;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.repositories.AppUserRepository;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algo1);
         Map<String,String> idToken = new HashMap<>();
+        AppUser appUser = appUserRepository.findByUsername(request.getParameter("username"));
+        idToken.put("userId",appUser.getId());
+        idToken.put("rolesUser", ((List<AppRole>) appUser.getAppRoles()).get(0).getRolename());
         idToken.put("access-token",jwtAccessToken);
         idToken.put("refresh-token",jwtRefreshAccessToken);
         response.setContentType("application/json");

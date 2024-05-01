@@ -17,12 +17,12 @@ public class TransfertRequest {
     private String message;
 
     //link to one request
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requestId")
     private Request request;
 
     //link to one personal
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personalId")
     private Personal personal;
 
