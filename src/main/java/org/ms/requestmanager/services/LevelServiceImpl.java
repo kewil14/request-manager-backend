@@ -37,7 +37,7 @@ public class LevelServiceImpl implements LevelService {
     @Override
     public LevelResponseDTO saveLevel(LevelRequestDTO levelRequestDTO) {
         //Vérifier que tous les paramètres ont été reçus
-        if(levelRequestDTO.getName().equals("") || levelRequestDTO.getDepartmentId() == null || levelRequestDTO.getPersonalId() == null)
+        if(levelRequestDTO.getName().equals("") || levelRequestDTO.getDepartmentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
         //Vérifier si le Department Id passé en paramètre existe vraiment
         Department department = departmentRepository.findById(levelRequestDTO.getDepartmentId()).orElse(null);
@@ -89,7 +89,7 @@ public class LevelServiceImpl implements LevelService {
     @Override
     public LevelResponseDTO updateLevel(Long levelId, LevelRequestDTO levelRequestDTO) {
         //Vérifier que tous les paramètres ont été reçus
-        if(levelRequestDTO.getName().equals("") || levelRequestDTO.getDepartmentId() == null || levelRequestDTO.getPersonalId() == null)
+        if(levelRequestDTO.getName().equals("") || levelRequestDTO.getDepartmentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
         //Vérifier si le Department Id passé en paramètre existe vraiment
         Department department = departmentRepository.findById(levelRequestDTO.getDepartmentId()).orElse(null);

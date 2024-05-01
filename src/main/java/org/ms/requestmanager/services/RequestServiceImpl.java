@@ -42,8 +42,7 @@ public class RequestServiceImpl implements RequestService {
     public RequestResponseDTO saveRequest(RequestRequestDTO requestRequestDTO) {
         //Vérifier que tous les paramètres ont été reçus
         if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getTypeRequestId() == null
-                || requestRequestDTO.getStudentId() == null || requestRequestDTO.getPersonalId() == null
-                || requestRequestDTO.getUeId() == null)
+                || requestRequestDTO.getStudentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
         //Vérifier si le TypeRequest Id passé en paramètre existe vraiment
         TypeRequest typeRequest = typeRequestRepository.findById(requestRequestDTO.getTypeRequestId()).orElse(null);
@@ -51,12 +50,11 @@ public class RequestServiceImpl implements RequestService {
         //Vérifier si le Student Id passé en paramètre existe vraiment
         Student student = studentRepository.findById(requestRequestDTO.getStudentId()).orElse(null);
         if(student == null) throw new RessourceNotFoundException("Student Not Found for this studentId!");
-        //Vérifier si le Personal Id passé en paramètre existe vraiment
-        Personal personal = personalRepository.findById(requestRequestDTO.getPersonalId()).orElse(null);
-        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this personalId!");
         //Vérifier si le Ue Id passé en paramètre existe vraiment
-        Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
-        if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
+        if(requestRequestDTO.getUeId()!=null){
+            Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
+            if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
+        }
         //Faire le mapping et enregistrer
         Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);
         request.setCreatedAt(Instant.now());
@@ -124,8 +122,7 @@ public class RequestServiceImpl implements RequestService {
     public RequestResponseDTO updateRequest(Long requestId, RequestRequestDTO requestRequestDTO) {
         //Vérifier que tous les paramètres ont été reçus
         if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getTypeRequestId() == null
-                || requestRequestDTO.getStudentId() == null || requestRequestDTO.getPersonalId() == null
-                || requestRequestDTO.getUeId() == null)
+                || requestRequestDTO.getStudentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
         //Vérifier si le TypeRequest Id passé en paramètre existe vraiment
         TypeRequest typeRequest = typeRequestRepository.findById(requestRequestDTO.getTypeRequestId()).orElse(null);
@@ -133,12 +130,11 @@ public class RequestServiceImpl implements RequestService {
         //Vérifier si le Student Id passé en paramètre existe vraiment
         Student student = studentRepository.findById(requestRequestDTO.getStudentId()).orElse(null);
         if(student == null) throw new RessourceNotFoundException("Student Not Found for this studentId!");
-        //Vérifier si le Personal Id passé en paramètre existe vraiment
-        Personal personal = personalRepository.findById(requestRequestDTO.getPersonalId()).orElse(null);
-        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this personalId!");
         //Vérifier si le Ue Id passé en paramètre existe vraiment
-        Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
-        if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
+        if(requestRequestDTO.getUeId()!=null){
+            Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
+            if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
+        }
         //Vérifier si l'élément à modifier existe déjà à partir de l'id
         Request requestLast = requestRepository.findById(requestId).orElse(null);
         if(requestLast == null) throw new RessourceNotFoundException("Request not exist!");

@@ -8,6 +8,5 @@ public class RequestRequestDTO {
     private String message;
     private Long typeRequestId;
     private Long studentId;
-    private Long personalId;
     private Long ueId;
 }
