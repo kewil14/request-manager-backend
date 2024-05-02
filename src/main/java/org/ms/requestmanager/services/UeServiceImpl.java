@@ -52,6 +52,8 @@ public class UeServiceImpl implements UeService {
         //Faire le mapping et enregistrer
         Ue ue = ueMapper.ueRequestDTOToUe(ueRequestDTO);
         ue.setCreatedAt(Instant.now());
+        ue.setLevel(level);
+        ue.setPersonal(personal);
         return ueMapper.ueToUeResponseDTO(ueRepository.save(ue));
     }
 
@@ -113,6 +115,8 @@ public class UeServiceImpl implements UeService {
         //Faire la sauvegarde
         Ue ue = ueMapper.ueRequestDTOToUe(ueRequestDTO);
         ue.setId(ueId);
+        ue.setLevel(level);
+        ue.setPersonal(personal);
         ue.setCreatedAt(ueLast.getCreatedAt());
         ue.setUpdatedAt(Instant.now());
         return ueMapper.ueToUeResponseDTO(ueRepository.save(ue));

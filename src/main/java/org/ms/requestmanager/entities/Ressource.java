@@ -17,12 +17,12 @@ public class Ressource {
     private String name;
 
     //link to one type of ressource
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "typeRessourceId")
     private TypeRessource typeRessource;
 
     //link to one ue
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ueId")
     private Ue ue;
 

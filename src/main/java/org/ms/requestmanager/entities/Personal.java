@@ -28,12 +28,12 @@ public class Personal {
     private AppUser appUser;
 
     //One personal -- One type of personal
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "typePersonalId")
     private TypePersonal typePersonal;
 
     //One personal -- One department
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "departmentId")
     private Department department;
 
@@ -44,22 +44,22 @@ public class Personal {
     private Instant updatedAt;
 
     //Teaching Many Ues
-    @OneToMany(mappedBy = "personal", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personal")
     @JsonIgnore
     private List<Ue> ues;
 
     //link to many requests
-    @OneToMany(mappedBy = "personal", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personal")
     @JsonIgnore
     private List<Request> requests;
 
     //link to many commentRequest
-    @OneToMany(mappedBy = "personal", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personal")
     @JsonIgnore
     private List<CommentRequest> commentRequests;
 
     //link to many transfertRequest
-    @OneToMany(mappedBy = "personal", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personal")
     @JsonIgnore
     private List<TransfertRequest> transfertRequests;
 }

@@ -19,7 +19,7 @@ public class Level {
     private String name;
 
     //link to one department
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "departmentId")
     private Department department;
 
@@ -35,12 +35,12 @@ public class Level {
     private Instant updatedAt;
 
     //link to many ues -- One level has many Ues
-    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "level")
     @JsonIgnore
     private List<Ue> ues;
 
     //link to many students -- One level has many students
-    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "level")
     @JsonIgnore
     private List<Student> students;
 }

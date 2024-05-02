@@ -20,22 +20,64 @@ public class RequestServiceImpl implements RequestService {
     private final RequestMapper requestMapper;
     private final TypeRequestRepository typeRequestRepository;
     private final StudentRepository studentRepository;
+    private final TypePersonalRepository typePersonalRepository;
     private final PersonalRepository personalRepository;
     private final UeRepository ueRepository;
     private final AttachmentRepository attachmentRepository;
     private final CommentRequestRepository commentRequestRepository;
     private final TransfertRequestRepository transfertRequestRepository;
 
-    public RequestServiceImpl(RequestRepository requestRepository, RequestMapper requestMapper, TypeRequestRepository typeRequestRepository, StudentRepository studentRepository, PersonalRepository personalRepository, UeRepository ueRepository, AttachmentRepository attachmentRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository) {
+    public RequestServiceImpl(RequestRepository requestRepository, RequestMapper requestMapper, TypeRequestRepository typeRequestRepository, StudentRepository studentRepository, TypePersonalRepository typePersonalRepository, PersonalRepository personalRepository, UeRepository ueRepository, AttachmentRepository attachmentRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository) {
         this.requestRepository = requestRepository;
         this.requestMapper = requestMapper;
         this.typeRequestRepository = typeRequestRepository;
         this.studentRepository = studentRepository;
+        this.typePersonalRepository = typePersonalRepository;
         this.personalRepository = personalRepository;
         this.ueRepository = ueRepository;
         this.attachmentRepository = attachmentRepository;
         this.commentRequestRepository = commentRequestRepository;
         this.transfertRequestRepository = transfertRequestRepository;
+    }
+
+    private Personal getRecipientRequest(RequestRequestDTO requestRequestDTO, TypeRequest typeRequest, Student student, Ue ue) {
+        TypePersonal typePersonal;
+        Personal personal = null;
+        switch (typeRequest.getName()) {
+            case "IDENTIFICATION": {
+                typePersonal = typePersonalRepository.findByName("CHIEF_SCHOOLING");
+                List<Personal> personals = personalRepository.findByTypePersonal(typePersonal);
+                personal = personals.get(0);
+                break;
+            }
+            case "NOTE_CC":
+            case "AUTORISATION_ABSENCE":
+                if (ue == null)
+                    throw new RessourceNotFoundException("Data required for UE not received.");
+                personal = personalRepository.findById(ue.getPersonal().getId()).orElse(null);
+                break;
+            case "NOTE_EE":
+            case "AUTORISATION_EVALUATION":
+                if (ue == null)
+                    throw new RessourceNotFoundException("Data required for UE not received.");
+                personal = personalRepository.findById(ue.getLevel().getPersonal().getId()).orElse(null);
+                break;
+            case "REQUEST_ACADEMIC_TRANSCRIPT":
+            case "REQUEST_DIPLOMA": {
+                typePersonal = typePersonalRepository.findByName("DIRECTOR");
+                List<Personal> personals = personalRepository.findByTypePersonal(typePersonal);
+                personal = personals.get(0);
+                break;
+            }
+            case "OTHER":
+                if (requestRequestDTO.getObjet().equals(""))
+                    throw new RessourceNotFoundException("Data required for OBJECT not received.");
+                personal = personalRepository.findById(
+                        student.getLevel().getDepartment().getPersonal().getId()
+                ).orElse(null);
+                break;
+        }
+        return personal;
     }
 
     @Override
@@ -44,6 +86,8 @@ public class RequestServiceImpl implements RequestService {
         if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getTypeRequestId() == null
                 || requestRequestDTO.getStudentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
+        //Créer l'objet qui sera enregistré
+        Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);
         //Vérifier si le TypeRequest Id passé en paramètre existe vraiment
         TypeRequest typeRequest = typeRequestRepository.findById(requestRequestDTO.getTypeRequestId()).orElse(null);
         if(typeRequest == null) throw new RessourceNotFoundException("TypeRequest Not Found for this typeRequestId!");
@@ -51,15 +95,21 @@ public class RequestServiceImpl implements RequestService {
         Student student = studentRepository.findById(requestRequestDTO.getStudentId()).orElse(null);
         if(student == null) throw new RessourceNotFoundException("Student Not Found for this studentId!");
         //Vérifier si le Ue Id passé en paramètre existe vraiment
+        Ue ue = null;
         if(requestRequestDTO.getUeId()!=null){
-            Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
+            ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
             if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
         }
-        //Faire le mapping et enregistrer
-        Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);
+        //Define Recipient of Request
+        Personal personal = getRecipientRequest(requestRequestDTO, typeRequest, student, ue);
+        //Enregistrer
         request.setCreatedAt(Instant.now());
         request.setStatus("SENDING");
         request.setState(1L);
+        request.setTypeRequest(typeRequest);
+        request.setStudent(student);
+        request.setUe(ue);
+        request.setPersonal(personal);
         return requestMapper.requestToRequestResponseDTO(requestRepository.save(request));
     }
 
@@ -104,6 +154,11 @@ public class RequestServiceImpl implements RequestService {
         if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this personalId!");
         List<Request> requests = requestRepository.findByPersonalAndState(personal, 1L);
         return requests.stream()
+                .peek(request -> {
+                    if (request.getStatus().equals("SENDING")) {
+                        request.setStatus("PENDING");
+                    }
+                })
                 .map(requestMapper::requestToRequestResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -124,6 +179,8 @@ public class RequestServiceImpl implements RequestService {
         if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getTypeRequestId() == null
                 || requestRequestDTO.getStudentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
+        //Créer l'objet qui sera enregistré
+        Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);
         //Vérifier si le TypeRequest Id passé en paramètre existe vraiment
         TypeRequest typeRequest = typeRequestRepository.findById(requestRequestDTO.getTypeRequestId()).orElse(null);
         if(typeRequest == null) throw new RessourceNotFoundException("TypeRequest Not Found for this typeRequestId!");
@@ -131,17 +188,25 @@ public class RequestServiceImpl implements RequestService {
         Student student = studentRepository.findById(requestRequestDTO.getStudentId()).orElse(null);
         if(student == null) throw new RessourceNotFoundException("Student Not Found for this studentId!");
         //Vérifier si le Ue Id passé en paramètre existe vraiment
+        Ue ue = null;
         if(requestRequestDTO.getUeId()!=null){
-            Ue ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
+            ue = ueRepository.findById(requestRequestDTO.getUeId()).orElse(null);
             if(ue == null) throw new RessourceNotFoundException("Ue Not Found for this ueId!");
         }
         //Vérifier si l'élément à modifier existe déjà à partir de l'id
         Request requestLast = requestRepository.findById(requestId).orElse(null);
         if(requestLast == null) throw new RessourceNotFoundException("Request not exist!");
-        //Faire la sauvegarde
-        Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);
+        //Define Recipient of Request
+        Personal personal = getRecipientRequest(requestRequestDTO, typeRequest, student, ue);
+        //Enregistrer
         request.setId(requestId);
         request.setCreatedAt(requestLast.getCreatedAt());
+        request.setStatus(requestLast.getStatus());
+        request.setState(1L);
+        request.setTypeRequest(typeRequest);
+        request.setStudent(student);
+        request.setUe(ue);
+        request.setPersonal(personal);
         request.setUpdatedAt(Instant.now());
         return requestMapper.requestToRequestResponseDTO(requestRepository.save(request));
     }

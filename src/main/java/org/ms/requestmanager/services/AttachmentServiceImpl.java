@@ -39,6 +39,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         //Faire le mapping et enregistrer
         Attachment attachment = attachmentMapper.attachmentRequestDTOToAttachment(attachmentRequestDTO);
         attachment.setCreatedAt(Instant.now());
+        attachment.setRequest(request);
         return attachmentMapper.attachmentToAttachmentResponseDTO(attachmentRepository.save(attachment));
     }
 
@@ -81,6 +82,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         //Faire la sauvegarde
         Attachment attachment = attachmentMapper.attachmentRequestDTOToAttachment(attachmentRequestDTO);
         attachment.setId(attachmentId);
+        attachment.setRequest(request);
         attachment.setCreatedAt(attachmentLast.getCreatedAt());
         attachment.setUpdatedAt(Instant.now());
         return attachmentMapper.attachmentToAttachmentResponseDTO(attachmentRepository.save(attachment));

@@ -25,12 +25,12 @@ public class Ue {
     private Long semester; // 1, 2
 
     //One Ue to One level
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "levelId")
     private Level level;
 
     //One Ue is teaching by one personal
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")
     private Personal personal;
 
@@ -41,12 +41,12 @@ public class Ue {
     private Instant updatedAt;
 
     //link to many ressource
-    @OneToMany(mappedBy = "ue", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ue")
     @JsonIgnore
     private List<Ressource> ressources;
 
     //link to many requests
-    @OneToMany(mappedBy = "ue", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ue")
     @JsonIgnore
     private List<Request> requests;
 }

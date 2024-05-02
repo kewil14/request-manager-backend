@@ -48,6 +48,8 @@ public class LevelServiceImpl implements LevelService {
         //Faire le mapping et enregistrer
         Level level = levelMapper.levelRequestDTOToLevel(levelRequestDTO);
         level.setCreatedAt(Instant.now());
+        level.setDepartment(department);
+        level.setPersonal(personal);
         return levelMapper.levelToLevelResponseDTO(levelRepository.save(level));
     }
 
@@ -103,6 +105,8 @@ public class LevelServiceImpl implements LevelService {
         //Faire la sauvegarde
         Level level = levelMapper.levelRequestDTOToLevel(levelRequestDTO);
         level.setId(levelId);
+        level.setDepartment(department);
+        level.setPersonal(personal);
         level.setCreatedAt(levelLast.getCreatedAt());
         level.setUpdatedAt(Instant.now());
         return levelMapper.levelToLevelResponseDTO(levelRepository.save(level));

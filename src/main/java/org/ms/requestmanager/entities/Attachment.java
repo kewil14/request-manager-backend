@@ -17,7 +17,7 @@ public class Attachment {
     private String name;
 
     //link to one request
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "requestId")
     private Request request;
 

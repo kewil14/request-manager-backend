@@ -9,5 +9,5 @@ public class StudentRequestDTO {
     private String firstname;
     private String lastname;
     private Long levelId;
-    private Long userId;
+    private String userId;
 }

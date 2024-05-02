@@ -25,22 +25,22 @@ public class Request {
     private Long state; // 0 = ARCHIVE, 1 = ACTIVE
 
     //link to one typeRequest
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "typeRequestId")
     private TypeRequest typeRequest;
 
     //link to one student
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "studentId")
     private Student student;
 
     //link to one personal
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")
     private Personal personal;
 
     //link to one ue
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ueId")
     private Ue ue;
 
@@ -51,17 +51,17 @@ public class Request {
     private Instant updatedAt;
 
     //link to many attachments
-    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "request")
     @JsonIgnore
     private List<Attachment> attachments;
 
     //link to many commentRequest
-    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "request")
     @JsonIgnore
     private List<CommentRequest> commentRequests;
 
     //link to many transfertRequest
-    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "request")
     @JsonIgnore
     private List<TransfertRequest> transfertRequests;
 }

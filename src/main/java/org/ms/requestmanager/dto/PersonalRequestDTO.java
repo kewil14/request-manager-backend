@@ -7,7 +7,7 @@ public class PersonalRequestDTO {
     private String grade;
     private String firstname;
     private String lastname;
-    private Long userId;
+    private String userId;
     private Long typePersonalId;
     private Long departmentId;
 }

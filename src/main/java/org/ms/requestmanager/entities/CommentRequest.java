@@ -22,7 +22,7 @@ public class CommentRequest {
     private Request request;
 
     //link to one personal
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")
     private Personal personal;
 

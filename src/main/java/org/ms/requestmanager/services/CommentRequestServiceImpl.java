@@ -47,6 +47,8 @@ public class CommentRequestServiceImpl implements CommentRequestService {
         //Faire le mapping et enregistrer
         CommentRequest commentRequest = commentRequestMapper.commentRequestRequestDTOToCommentRequest(commentRequestRequestDTO);
         commentRequest.setCreatedAt(Instant.now());
+        commentRequest.setRequest(request);
+        commentRequest.setPersonal(personal);
         return commentRequestMapper.commentRequestToCommentRequestResponseDTO(commentRequestRepository.save(commentRequest));
     }
 
@@ -103,6 +105,8 @@ public class CommentRequestServiceImpl implements CommentRequestService {
         //Faire la sauvegarde
         CommentRequest commentRequest = commentRequestMapper.commentRequestRequestDTOToCommentRequest(commentRequestRequestDTO);
         commentRequest.setId(commentRequestId);
+        commentRequest.setRequest(request);
+        commentRequest.setPersonal(personal);
         commentRequest.setCreatedAt(commentRequestLast.getCreatedAt());
         commentRequest.setUpdatedAt(Instant.now());
         return commentRequestMapper.commentRequestToCommentRequestResponseDTO(commentRequestRepository.save(commentRequest));

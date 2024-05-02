@@ -53,9 +53,18 @@ public class PersonalServiceImpl implements PersonalService {
         //Vérifier si le Department Id passé en paramètre existe vraiment
         Department department = departmentRepository.findById(personalRequestDTO.getDepartmentId()).orElse(null);
         if(department == null) throw new RessourceNotFoundException("Department Not Found for this departmentId!");
+        //check User
+        AppUser appUser = null;
+        if(personalRequestDTO.getUserId()!=null){
+            appUser = appUserRepository.findById(personalRequestDTO.getUserId()).orElse(null);
+            if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+        }
         //Faire le mapping et enregistrer
         Personal personal = personalMapper.personalRequestDTOToPersonal(personalRequestDTO);
         personal.setCreatedAt(Instant.now());
+        personal.setTypePersonal(typePersonal);
+        personal.setDepartment(department);
+        personal.setAppUser(appUser);
         return personalMapper.personalToPersonalResponseDTO(personalRepository.save(personal));
     }
 
@@ -117,11 +126,20 @@ public class PersonalServiceImpl implements PersonalService {
         //Vérifier si l'élément à modifier existe déjà à partir de l'id
         Personal personalLast = personalRepository.findById(personalId).orElse(null);
         if(personalLast == null) throw new RessourceNotFoundException("Personal not exist!");
+        //check User
+        AppUser appUser = null;
+        if(personalRequestDTO.getUserId()!=null){
+            appUser = appUserRepository.findById(personalRequestDTO.getUserId()).orElse(null);
+            if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+        }
         //Faire la sauvegarde
         Personal personal = personalMapper.personalRequestDTOToPersonal(personalRequestDTO);
         personal.setId(personalId);
+        personal.setTypePersonal(typePersonal);
+        personal.setDepartment(department);
         personal.setCreatedAt(personalLast.getCreatedAt());
         personal.setUpdatedAt(Instant.now());
+        personal.setAppUser(appUser);
         return personalMapper.personalToPersonalResponseDTO(personalRepository.save(personal));
     }
 

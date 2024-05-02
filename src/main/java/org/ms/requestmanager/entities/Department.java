@@ -20,7 +20,7 @@ public class Department {
     private String name;
 
     //link to one personal has chief
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")
     private Personal personal;
 
@@ -31,12 +31,12 @@ public class Department {
     private Instant updatedAt;
 
     //link to many levels
-    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "department")
     @JsonIgnore
     private List<Level> levels;
 
     //link to many personals
-    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "department")
     @JsonIgnore
     private List<Personal> personals;
 }

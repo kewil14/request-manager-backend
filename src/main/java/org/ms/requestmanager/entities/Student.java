@@ -25,12 +25,12 @@ public class Student {
     private String lastname;
 
     //One student -- One level
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "levelId")
     private Level level;
 
     //link to one student to one User
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userId")
     private AppUser appUser;
 
@@ -41,7 +41,7 @@ public class Student {
     private Instant updatedAt;
 
     //link to many requests
-    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "student")
     @JsonIgnore
     private List<Request> requests;
 }
