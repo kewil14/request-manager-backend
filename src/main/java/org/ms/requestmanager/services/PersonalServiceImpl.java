@@ -58,6 +58,9 @@ public class PersonalServiceImpl implements PersonalService {
         if(personalRequestDTO.getUserId()!=null){
             appUser = appUserRepository.findById(personalRequestDTO.getUserId()).orElse(null);
             if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+            //Vérifier si l'user reçu n'est pas déjà associé
+            Personal p = personalRepository.findByAppUser(appUser);
+            if(p!=null) throw new RessourceNotFoundException("User has already linked to Personal");
         }
         //Faire le mapping et enregistrer
         Personal personal = personalMapper.personalRequestDTOToPersonal(personalRequestDTO);
@@ -131,6 +134,11 @@ public class PersonalServiceImpl implements PersonalService {
         if(personalRequestDTO.getUserId()!=null){
             appUser = appUserRepository.findById(personalRequestDTO.getUserId()).orElse(null);
             if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+            //Vérifier si l'user reçu n'est pas déjà associé s'il a été modifié
+            if(!(appUser == personalLast.getAppUser())){
+                Personal p = personalRepository.findByAppUser(appUser);
+                if(p!=null) throw new RessourceNotFoundException("User has already linked to Personal");
+            }
         }
         //Faire la sauvegarde
         Personal personal = personalMapper.personalRequestDTOToPersonal(personalRequestDTO);

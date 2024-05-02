@@ -42,9 +42,10 @@ public class LevelServiceImpl implements LevelService {
         //Vérifier si le Department Id passé en paramètre existe vraiment
         Department department = departmentRepository.findById(levelRequestDTO.getDepartmentId()).orElse(null);
         if(department == null) throw new RessourceNotFoundException("Department Not Found for this departmentId!");
-        //Vérifier si le Personal Id passé en paramètre existe vraiment
-        Personal personal = personalRepository.findById(levelRequestDTO.getPersonalId()).orElse(null);
-        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this Personal Id!");
+        //Define the president of jury
+        Personal personal = null;
+        if(levelRequestDTO.getPersonalId()!=null)
+            personal = personalRepository.findById(levelRequestDTO.getPersonalId()).orElse(null);
         //Faire le mapping et enregistrer
         Level level = levelMapper.levelRequestDTOToLevel(levelRequestDTO);
         level.setCreatedAt(Instant.now());
@@ -96,9 +97,10 @@ public class LevelServiceImpl implements LevelService {
         //Vérifier si le Department Id passé en paramètre existe vraiment
         Department department = departmentRepository.findById(levelRequestDTO.getDepartmentId()).orElse(null);
         if(department == null) throw new RessourceNotFoundException("Department Not Found for this departmentId!");
-        //Vérifier si le Personal Id passé en paramètre existe vraiment
-        Personal personal = personalRepository.findById(levelRequestDTO.getPersonalId()).orElse(null);
-        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this Personal Id!");
+        //Define the president of jury
+        Personal personal = null;
+        if(levelRequestDTO.getPersonalId()!=null)
+            personal = personalRepository.findById(levelRequestDTO.getPersonalId()).orElse(null);
         //Vérifier si l'élément à modifier existe déjà à partir de l'id
         Level levelLast = levelRepository.findById(levelId).orElse(null);
         if(levelLast == null) throw new RessourceNotFoundException("Level not exist!");

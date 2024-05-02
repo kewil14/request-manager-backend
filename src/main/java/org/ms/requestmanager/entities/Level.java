@@ -2,6 +2,8 @@ package org.ms.requestmanager.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Data
+@JsonIgnoreProperties({"personal" ,"department", "ues", "students"})
 public class Level {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,12 +38,12 @@ public class Level {
     private Instant updatedAt;
 
     //link to many ues -- One level has many Ues
-    @OneToMany(mappedBy = "level")
+    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Ue> ues;
 
     //link to many students -- One level has many students
-    @OneToMany(mappedBy = "level")
+    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Student> students;
 }

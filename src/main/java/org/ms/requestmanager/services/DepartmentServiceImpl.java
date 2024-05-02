@@ -3,6 +3,7 @@ package org.ms.requestmanager.services;
 import org.ms.requestmanager.dto.DepartmentRequestDTO;
 import org.ms.requestmanager.dto.DepartmentResponseDTO;
 import org.ms.requestmanager.entities.Department;
+import org.ms.requestmanager.entities.Personal;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.DepartmentMapper;
 import org.ms.requestmanager.repositories.DepartmentRepository;
@@ -38,9 +39,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         //Vérifier si le name reçu n'existe pas déjà
         Department aC = departmentRepository.findByName(departmentRequestDTO.getName());
         if(aC!=null) throw new RessourceNotFoundException("Name already exist");
+        //Define the chief
+        Personal personal = null;
+        if(departmentRequestDTO.getPersonalId()!=null)
+            personal = personalRepository.findById(departmentRequestDTO.getPersonalId()).orElse(null);
         //Faire le mapping et enregistrer
         Department department = departmentMapper.departmentRequestDTOToDepartment(departmentRequestDTO);
         department.setCreatedAt(Instant.now());
+        department.setPersonal(personal);
         return departmentMapper.departmentToDepartmentResponseDTO(departmentRepository.save(department));
     }
 
@@ -72,11 +78,16 @@ public class DepartmentServiceImpl implements DepartmentService {
             Department aC = departmentRepository.findByName(departmentRequestDTO.getName());
             if(aC!=null) throw new RessourceNotFoundException("Name already exist");
         }
+        //Define the chief
+        Personal personal = null;
+        if(departmentRequestDTO.getPersonalId()!=null)
+            personal = personalRepository.findById(departmentRequestDTO.getPersonalId()).orElse(null);
         //Faire la sauvegarde
         Department department = departmentMapper.departmentRequestDTOToDepartment(departmentRequestDTO);
         department.setId(departmentId);
         department.setCreatedAt(departmentLast.getCreatedAt());
         department.setUpdatedAt(Instant.now());
+        department.setPersonal(personal);
         return departmentMapper.departmentToDepartmentResponseDTO(departmentRepository.save(department));
     }
 

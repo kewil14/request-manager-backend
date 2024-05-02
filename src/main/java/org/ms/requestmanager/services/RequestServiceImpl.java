@@ -70,7 +70,7 @@ public class RequestServiceImpl implements RequestService {
                 break;
             }
             case "OTHER":
-                if (requestRequestDTO.getObjet().equals(""))
+                if (requestRequestDTO.getObjet().equals("") || requestRequestDTO.getObjet()==null)
                     throw new RessourceNotFoundException("Data required for OBJECT not received.");
                 personal = personalRepository.findById(
                         student.getLevel().getDepartment().getPersonal().getId()
@@ -83,8 +83,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public RequestResponseDTO saveRequest(RequestRequestDTO requestRequestDTO) {
         //Vérifier que tous les paramètres ont été reçus
-        if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getTypeRequestId() == null
-                || requestRequestDTO.getStudentId() == null)
+        if(requestRequestDTO.getMessage().equals("") || requestRequestDTO.getMessage() == null ||
+                requestRequestDTO.getTypeRequestId() == null || requestRequestDTO.getStudentId() == null)
             throw new RessourceNotFoundException("Data required not received.");
         //Créer l'objet qui sera enregistré
         Request request = requestMapper.requestRequestDTOToRequest(requestRequestDTO);

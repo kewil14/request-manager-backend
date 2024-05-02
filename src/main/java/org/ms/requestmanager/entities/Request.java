@@ -2,6 +2,8 @@ package org.ms.requestmanager.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Data
+@JsonIgnoreProperties({"student", "personal", "ue", "attachments", "commentRequests", "transfertRequests"})
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,17 +54,17 @@ public class Request {
     private Instant updatedAt;
 
     //link to many attachments
-    @OneToMany(mappedBy = "request")
+    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Attachment> attachments;
 
     //link to many commentRequest
-    @OneToMany(mappedBy = "request")
+    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<CommentRequest> commentRequests;
 
     //link to many transfertRequest
-    @OneToMany(mappedBy = "request")
+    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<TransfertRequest> transfertRequests;
 }

@@ -45,6 +45,7 @@ public class RessourceServiceImpl implements RessourceService {
         Ressource ressource = ressourceMapper.ressourceRequestDTOToRessource(ressourceRequestDTO);
         ressource.setCreatedAt(Instant.now());
         ressource.setTypeRessource(typeRessource);
+        ressource.setUe(ue);
         return ressourceMapper.ressourceToRessourceResponseDTO(ressourceRepository.save(ressource));
     }
 
@@ -101,6 +102,7 @@ public class RessourceServiceImpl implements RessourceService {
         Ressource ressource = ressourceMapper.ressourceRequestDTOToRessource(ressourceRequestDTO);
         ressource.setId(ressourceId);
         ressource.setTypeRessource(typeRessource);
+        ressource.setUe(ue);
         ressource.setCreatedAt(ressourceLast.getCreatedAt());
         ressource.setUpdatedAt(Instant.now());
         return ressourceMapper.ressourceToRessourceResponseDTO(ressourceRepository.save(ressource));

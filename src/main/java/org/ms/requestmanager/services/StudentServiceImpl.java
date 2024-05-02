@@ -5,7 +5,6 @@ import org.ms.requestmanager.dto.StudentResponseDTO;
 import org.ms.requestmanager.entities.AppUser;
 import org.ms.requestmanager.entities.Level;
 import org.ms.requestmanager.entities.Student;
-import org.ms.requestmanager.entities.Ue;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.StudentMapper;
 import org.ms.requestmanager.repositories.*;
@@ -50,6 +49,9 @@ public class StudentServiceImpl implements StudentService {
         if(studentRequestDTO.getUserId()!=null){
             appUser = appUserRepository.findById(studentRequestDTO.getUserId()).orElse(null);
             if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+            //Vérifier si l'user reçu n'est pas déjà associé
+            Student s = studentRepository.findByAppUser(appUser);
+            if(s!=null) throw new RessourceNotFoundException("User has already linked to Personal");
         }
         //Faire le mapping et enregistrer
         Student student = studentMapper.studentRequestDTOToStudent(studentRequestDTO);
@@ -114,6 +116,11 @@ public class StudentServiceImpl implements StudentService {
         if(studentRequestDTO.getUserId()!=null){
             appUser = appUserRepository.findById(studentRequestDTO.getUserId()).orElse(null);
             if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
+            //Vérifier si l'user reçu n'est pas déjà associé s'il a été modifié
+            if(!(appUser == studentLast.getAppUser())){
+                Student s = studentRepository.findByAppUser(appUser);
+                if(s!=null) throw new RessourceNotFoundException("User has already linked to Personal");
+            }
         }
         //Faire la sauvegarde
         Student student = studentMapper.studentRequestDTOToStudent(studentRequestDTO);
@@ -121,6 +128,7 @@ public class StudentServiceImpl implements StudentService {
         student.setCreatedAt(studentLast.getCreatedAt());
         student.setUpdatedAt(Instant.now());
         student.setAppUser(appUser);
+        student.setLevel(level);
         return studentMapper.studentToStudentResponseDTO(studentRepository.save(student));
     }
 

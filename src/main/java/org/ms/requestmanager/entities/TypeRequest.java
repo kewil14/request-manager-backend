@@ -27,7 +27,7 @@ public class TypeRequest {
     private Instant updatedAt;
 
     //link to many requests
-    @OneToMany(mappedBy = "typeRequest")
+    @OneToMany(mappedBy = "typeRequest", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Request> requests;
 }

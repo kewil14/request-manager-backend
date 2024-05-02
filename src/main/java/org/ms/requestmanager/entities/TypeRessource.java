@@ -26,7 +26,7 @@ public class TypeRessource {
     private Instant updatedAt;
 
     //link to many ressource
-    @OneToMany(mappedBy = "typeRessource")
+    @OneToMany(mappedBy = "typeRessource", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Ressource> ressources;
 }

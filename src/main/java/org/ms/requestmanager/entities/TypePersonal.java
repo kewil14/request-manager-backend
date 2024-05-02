@@ -26,7 +26,7 @@ public class TypePersonal {
     private Instant updatedAt;
 
     //link to many levels
-    @OneToMany(mappedBy = "typePersonal")
+    @OneToMany(mappedBy = "typePersonal", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Personal> personals;
 }
