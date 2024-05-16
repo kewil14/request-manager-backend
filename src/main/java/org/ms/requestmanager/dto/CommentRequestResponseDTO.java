@@ -3,6 +3,7 @@ package org.ms.requestmanager.dto;
 import lombok.Data;
 import org.ms.requestmanager.entities.Personal;
 import org.ms.requestmanager.entities.Request;
+import org.ms.requestmanager.entities.Student;
 
 import java.time.Instant;
 
@@ -12,6 +13,7 @@ public class CommentRequestResponseDTO {
     private String message;
     private Request request;
     private Personal personal;
+    private Student student;
     private Instant createdAt;
     private Instant updatedAt;
 }

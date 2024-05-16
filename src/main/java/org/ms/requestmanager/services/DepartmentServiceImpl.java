@@ -9,10 +9,13 @@ import org.ms.requestmanager.mappers.DepartmentMapper;
 import org.ms.requestmanager.repositories.DepartmentRepository;
 import org.ms.requestmanager.repositories.LevelRepository;
 import org.ms.requestmanager.repositories.PersonalRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +26,14 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentMapper departmentMapper;
     private final LevelRepository levelRepository;
     private final PersonalRepository personalRepository;
+    private final FileService fileService;
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, DepartmentMapper departmentMapper, LevelRepository levelRepository, PersonalRepository personalRepository) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, DepartmentMapper departmentMapper, LevelRepository levelRepository, PersonalRepository personalRepository, FileService fileService) {
         this.departmentRepository = departmentRepository;
         this.departmentMapper = departmentMapper;
         this.levelRepository = levelRepository;
         this.personalRepository = personalRepository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -55,6 +60,40 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = departmentRepository.findById(departmentId).orElse(null);
         if(department == null) throw new RessourceNotFoundException("Department Not Found!");
         return departmentMapper.departmentToDepartmentResponseDTO(department);
+    }
+
+    @Override
+    public DepartmentResponseDTO defineTimeTableDepartment(MultipartFile file, Long departmentId, int semester) {
+        Department department = departmentRepository.findById(departmentId).orElse(null);
+        if(department == null) throw new RessourceNotFoundException("Department Not Found!");
+        if(!(semester == 1 || semester == 2)) throw new RessourceNotFoundException("Semester must be 1 or 2.");
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("pdf") || extensionFile.equals("doc") || extensionFile.equals("docx") ||
+                extensionFile.equals("ppt") || extensionFile.equals("pptx") || extensionFile.equals("zip")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : PDF.");
+        String namedept = department.getName().replace(":", "_").replace(".", "_").replace(" ", "_");
+        String fileName = namedept+"_Semester_"+semester+"_"+new Date().getTime()+"."+extensionFile;
+        if(semester == 1){
+            if(department.getLinkTimetableS1() != null) fileService.deleteFile(department.getLinkTimetableS1(),"files/timetable/"+namedept);
+            department.setLinkTimetableS1(fileName);
+        }
+        else {
+            if(department.getLinkTimetableS2() != null) fileService.deleteFile(department.getLinkTimetableS2(),"files/timetable/"+namedept);
+            department.setLinkTimetableS2(fileName);
+        }
+        fileService.storeFile(file, fileName, "files/timetable/"+namedept);
+        department.setUpdatedAt(Instant.now());
+        return departmentMapper.departmentToDepartmentResponseDTO(department);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getTimetableDepartment(Long departmentId, int semester) {
+        Department department = departmentRepository.findById(departmentId).orElse(null);
+        if(department == null) throw new RessourceNotFoundException("Department Not Found!");
+        if(!(semester == 1 || semester == 2)) throw new RessourceNotFoundException("Semester must be 1 or 2.");
+        String namedept = department.getName().replace(":", "_").replace(".", "_").replace(" ", "_");
+        if(semester == 1) return fileService.getFile("files/timetable/"+namedept, department.getLinkTimetableS1());
+        else return fileService.getFile("files/timetable/"+namedept, department.getLinkTimetableS2());
     }
 
     @Override

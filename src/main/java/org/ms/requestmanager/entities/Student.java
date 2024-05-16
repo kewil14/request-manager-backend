@@ -13,7 +13,7 @@ import java.util.List;
 
 @Entity
 @Data
-@JsonIgnoreProperties({"level", "requests"})
+@JsonIgnoreProperties({"requests"})
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -7,6 +7,8 @@ import org.ms.requestmanager.entities.AppRole;
 import org.ms.requestmanager.entities.AppUser;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.repositories.AppUserRepository;
+import org.ms.requestmanager.services.PersonalService;
+import org.ms.requestmanager.services.StudentService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,18 +21,19 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final AppUserRepository appUserRepository;
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, AppUserRepository appUserRepository) {
+    private final StudentService studentService;
+    private final PersonalService personalService;
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, AppUserRepository appUserRepository, StudentService studentService, PersonalService personalService) {
         this.authenticationManager = authenticationManager;
         this.appUserRepository = appUserRepository;
+        this.studentService = studentService;
+        this.personalService = personalService;
     }
 
     @Override
@@ -63,12 +66,20 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withExpiresAt(new Date(System.currentTimeMillis()+ SecurityParams.EXPIRE_ACCESS_REFRESH_TOKEN))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algo1);
-        Map<String,String> idToken = new HashMap<>();
+        Map<Object,Object> idToken = new HashMap<>();
         AppUser appUser = appUserRepository.findByUsername(request.getParameter("username"));
+        String role = ((List<AppRole>) appUser.getAppRoles()).get(0).getRolename();
         idToken.put("userId",appUser.getId());
-        idToken.put("rolesUser", ((List<AppRole>) appUser.getAppRoles()).get(0).getRolename());
-        idToken.put("access-token",jwtAccessToken);
-        idToken.put("refresh-token",jwtRefreshAccessToken);
+        idToken.put("rolesUser", role);
+        idToken.put("access_token",jwtAccessToken);
+        idToken.put("refresh_token",jwtRefreshAccessToken);
+        Object o = null;
+        if (role.equals("STUDENT")) {
+            o = studentService.getStudentByUser(appUser.getId());
+        } else if (role.equals("PERSONAL")) {
+            o = personalService.getPersonalByUser(appUser.getId());
+        }
+        if(o != null) idToken.put("user", o.getClass().getName());
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getOutputStream(),idToken);
     }

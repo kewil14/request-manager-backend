@@ -16,6 +16,8 @@ public class Ressource {
 
     private String name;
 
+    private String link;
+
     //link to one type of ressource
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "typeRessourceId")

@@ -1,12 +1,15 @@
 package org.ms.requestmanager.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ms.requestmanager.dto.RessourceRequestDTO;
 import org.ms.requestmanager.dto.RessourceResponseDTO;
 import org.ms.requestmanager.services.RessourceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -18,13 +21,25 @@ public class RessourceRestAPI {
         this.ressourceService = ressourceService;
     }
     @PostMapping(path = "/ressources")
-    public RessourceResponseDTO save(@RequestBody RessourceRequestDTO ressourceRequestDTO){
-        return ressourceService.saveRessource(ressourceRequestDTO);
+    public RessourceResponseDTO save(@RequestParam("file") MultipartFile file, String ressourceIn) throws JsonProcessingException {
+        return ressourceService.saveRessource(file, ressourceIn);
     }
+
     @GetMapping(path = "/ressources/{id}")
     public RessourceResponseDTO getRessource(@PathVariable Long id){
         return ressourceService.getRessource(id);
     }
+
+    @GetMapping(path = "/ressources/file/{id}")
+    public ResponseEntity<byte[]> getRessourceFile(@PathVariable Long id) {
+        return ressourceService.getRessourceFile(id);
+    }
+
+    @GetMapping(path = "/ressources/pathfile/{id}")
+    public Path getRessourcePathFile(@PathVariable Long id) {
+        return ressourceService.getRessourcePathFile(id);
+    }
+
     @GetMapping(path = "/ressources")
     public List<RessourceResponseDTO> allRessources(){
         return ressourceService.getAllRessources();
@@ -40,6 +55,10 @@ public class RessourceRestAPI {
     @PutMapping(path = "/ressources/{id}")
     public RessourceResponseDTO updateRessource(@PathVariable Long id, @RequestBody RessourceRequestDTO ressourceRequestDTO){
         return ressourceService.updateRessource(id, ressourceRequestDTO);
+    }
+    @PutMapping(path = "/ressources/{id}/file")
+    public RessourceResponseDTO updateRessourceFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return ressourceService.updateRessourceFile(id, file);
     }
     @DeleteMapping(path = "/ressources/{id}")
     public void delete(@PathVariable Long id){

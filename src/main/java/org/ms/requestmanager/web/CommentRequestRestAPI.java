@@ -17,9 +17,9 @@ public class CommentRequestRestAPI {
     public CommentRequestRestAPI(CommentRequestService commentRequestService) {
         this.commentRequestService = commentRequestService;
     }
-    @PostMapping(path = "/commentRequests")
-    public CommentRequestResponseDTO save(@RequestBody CommentRequestRequestDTO commentRequestRequestDTO){
-        return commentRequestService.saveCommentRequest(commentRequestRequestDTO);
+    @PostMapping(path = "/commentRequests/{mode}")
+    public CommentRequestResponseDTO save(@RequestBody CommentRequestRequestDTO commentRequestRequestDTO, @PathVariable int mode){
+        return commentRequestService.saveCommentRequest(commentRequestRequestDTO, mode);
     }
     @GetMapping(path = "/commentRequests/{id}")
     public CommentRequestResponseDTO getCommentRequest(@PathVariable Long id){
@@ -37,9 +37,9 @@ public class CommentRequestRestAPI {
     public List<CommentRequestResponseDTO> allCommentRequestsByPersonal(@PathVariable Long personalId){
         return commentRequestService.getAllCommentRequestsByPersonal(personalId);
     }
-    @PutMapping(path = "/commentRequests/{id}")
-    public CommentRequestResponseDTO updateCommentRequest(@PathVariable Long id, @RequestBody CommentRequestRequestDTO commentRequestRequestDTO){
-        return commentRequestService.updateCommentRequest(id, commentRequestRequestDTO);
+    @PutMapping(path = "/commentRequests/{mode}/{id}")
+    public CommentRequestResponseDTO updateCommentRequest(@PathVariable Long id, @RequestBody CommentRequestRequestDTO commentRequestRequestDTO, @PathVariable int mode ){
+        return commentRequestService.updateCommentRequest(id, commentRequestRequestDTO,mode);
     }
     @DeleteMapping(path = "/commentRequests/{id}")
     public void delete(@PathVariable Long id){

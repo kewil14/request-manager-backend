@@ -22,6 +22,10 @@ public class Department {
     @Column(unique = true)
     private String name;
 
+    private String linkTimetableS1;
+
+    private String linkTimetableS2;
+
     //link to one personal has chief
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")

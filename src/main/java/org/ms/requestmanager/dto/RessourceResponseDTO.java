@@ -10,6 +10,7 @@ import java.time.Instant;
 public class RessourceResponseDTO {
     private Long id;
     private String name;
+    private String link;
     private TypeRessource typeRessource;
     private Ue ue;
     private Instant createdAt;

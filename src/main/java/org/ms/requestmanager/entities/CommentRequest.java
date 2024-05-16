@@ -2,7 +2,6 @@ package org.ms.requestmanager.entities;
 
 import javax.persistence.*;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,7 +10,6 @@ import java.time.Instant;
 
 @Entity
 @Data
-@JsonIgnoreProperties({"request","personal"})
 public class CommentRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +26,11 @@ public class CommentRequest {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personalId")
     private Personal personal;
+
+    //link to one personal
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "studentId")
+    private Student student;
 
     @CreationTimestamp
     private Instant createdAt;

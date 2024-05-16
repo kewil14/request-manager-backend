@@ -225,10 +225,10 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public void updateStatusRequest(Long requestId, String status) {
         if(requestRepository.findById(requestId).isPresent())
-            requestRepository.findById(requestId).ifPresent(accountingSubClass -> {
-                accountingSubClass.setStatus(status);
-                accountingSubClass.setUpdatedAt(Instant.now());
-                requestRepository.save(accountingSubClass);
+            requestRepository.findById(requestId).ifPresent(request -> {
+                request.setStatus(status);
+                request.setUpdatedAt(Instant.now());
+                requestRepository.save(request);
             });
         else throw new RessourceNotFoundException("Request Not Exist!");
     }

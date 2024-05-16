@@ -9,6 +9,8 @@ import java.time.Instant;
 public class DepartmentResponseDTO {
     private Long id;
     private String name;
+    private String linkTimetableS1;
+    private String linkTimetableS2;
     private Personal personal;
     private Instant createdAt;
     private Instant updatedAt;

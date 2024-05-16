@@ -36,6 +36,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         //Vérifier si le Request Id passé en paramètre existe vraiment
         Request request = requestRepository.findById(attachmentRequestDTO.getRequestId()).orElse(null);
         if(request == null) throw new RessourceNotFoundException("Request Not Found for this requestId!");
+        //Modifier le statut de la requête si nécessaire
+        if(request.getStatus().equals("PENDING")){
+            request.setStatus("SENDING");
+            request.setUpdatedAt(Instant.now());
+            requestRepository.save(request);
+        }
         //Faire le mapping et enregistrer
         Attachment attachment = attachmentMapper.attachmentRequestDTOToAttachment(attachmentRequestDTO);
         attachment.setCreatedAt(Instant.now());
@@ -79,6 +85,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         //Vérifier si le Request Id passé en paramètre existe vraiment
         Request request = requestRepository.findById(attachmentRequestDTO.getRequestId()).orElse(null);
         if(request == null) throw new RessourceNotFoundException("Request Not Found for this requestId!");
+        //Modifier le statut de la requête si nécessaire
+        if(request.getStatus().equals("PENDING")){
+            request.setStatus("SENDING");
+            request.setUpdatedAt(Instant.now());
+            requestRepository.save(request);
+        }
         //Faire la sauvegarde
         Attachment attachment = attachmentMapper.attachmentRequestDTOToAttachment(attachmentRequestDTO);
         attachment.setId(attachmentId);

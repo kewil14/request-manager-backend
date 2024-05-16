@@ -7,4 +7,5 @@ public class CommentRequestRequestDTO {
     private String message;
     private Long requestId;
     private Long personalId;
+    private Long studentId;
 }

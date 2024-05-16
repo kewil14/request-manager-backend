@@ -1,5 +1,7 @@
 package org.ms.requestmanager.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ms.requestmanager.dto.RessourceRequestDTO;
 import org.ms.requestmanager.dto.RessourceResponseDTO;
 import org.ms.requestmanager.entities.Ressource;
@@ -8,10 +10,14 @@ import org.ms.requestmanager.entities.Ue;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.RessourceMapper;
 import org.ms.requestmanager.repositories.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,16 +28,19 @@ public class RessourceServiceImpl implements RessourceService {
     private final RessourceMapper ressourceMapper;
     private final TypeRessourceRepository typeRessourceRepository;
     private final UeRepository ueRepository;
+    private final FileService fileService;
 
-    public RessourceServiceImpl(RessourceRepository ressourceRepository, RessourceMapper ressourceMapper, TypeRessourceRepository typeRessourceRepository, UeRepository ueRepository) {
+    public RessourceServiceImpl(RessourceRepository ressourceRepository, RessourceMapper ressourceMapper, TypeRessourceRepository typeRessourceRepository, UeRepository ueRepository, FileService fileService) {
         this.ressourceRepository = ressourceRepository;
         this.ressourceMapper = ressourceMapper;
         this.typeRessourceRepository = typeRessourceRepository;
         this.ueRepository = ueRepository;
+        this.fileService = fileService;
     }
 
     @Override
-    public RessourceResponseDTO saveRessource(RessourceRequestDTO ressourceRequestDTO) {
+    public RessourceResponseDTO saveRessource(MultipartFile file, String ressourceIn) throws JsonProcessingException {
+        RessourceRequestDTO ressourceRequestDTO = new ObjectMapper().readValue(ressourceIn, RessourceRequestDTO.class);
         //Vérifier que tous les paramètres ont été reçus
         if(ressourceRequestDTO.getName().equals("") || ressourceRequestDTO.getTypeRessourceId() == null || ressourceRequestDTO.getUeId() == null)
             throw new RessourceNotFoundException("Data required not received.");
@@ -46,6 +55,16 @@ public class RessourceServiceImpl implements RessourceService {
         ressource.setCreatedAt(Instant.now());
         ressource.setTypeRessource(typeRessource);
         ressource.setUe(ue);
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("pdf") || extensionFile.equals("doc") || extensionFile.equals("docx") ||
+                extensionFile.equals("ppt") || extensionFile.equals("pptx") || extensionFile.equals("zip")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : PDF, DOC, PPT and ZIP.");
+        String fileName = ressource.getUe().getCode()+"_"+ressource.getTypeRessource().getName()+"_"+
+                ressource.getName().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        fileService.storeFile(file, fileName, "files/"+ressource.getTypeRessource().getName());
+        ressource.setLink(fileName);
         return ressourceMapper.ressourceToRessourceResponseDTO(ressourceRepository.save(ressource));
     }
 
@@ -54,6 +73,20 @@ public class RessourceServiceImpl implements RessourceService {
         Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
         if(ressource == null) throw new RessourceNotFoundException("Ressource Not Found!");
         return ressourceMapper.ressourceToRessourceResponseDTO(ressource);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getRessourceFile(Long ressourceId) {
+        Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
+        if(ressource == null) throw new RessourceNotFoundException("Ressource Not Found!");
+        return fileService.getFile("files/"+ressource.getTypeRessource().getName(), ressource.getLink());
+    }
+
+    @Override
+    public Path getRessourcePathFile(Long ressourceId) {
+        Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
+        if(ressource == null) throw new RessourceNotFoundException("Ressource Not Found!");
+        return fileService.getPathFile("files/"+ressource.getTypeRessource().getName(), ressource.getLink());
     }
 
     @Override
@@ -105,6 +138,27 @@ public class RessourceServiceImpl implements RessourceService {
         ressource.setUe(ue);
         ressource.setCreatedAt(ressourceLast.getCreatedAt());
         ressource.setUpdatedAt(Instant.now());
+        ressource.setLink(ressourceLast.getLink());
+        return ressourceMapper.ressourceToRessourceResponseDTO(ressourceRepository.save(ressource));
+    }
+
+    @Override
+    public RessourceResponseDTO updateRessourceFile(Long ressourceId, MultipartFile file) {
+        //Vérifier si l'élément à modifier existe déjà à partir de l'id
+        Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
+        if(ressource == null) throw new RessourceNotFoundException("Ressource not exist!");
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("pdf") || extensionFile.equals("doc") || extensionFile.equals("docx") ||
+                extensionFile.equals("ppt") || extensionFile.equals("pptx") || extensionFile.equals("zip")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : PDF, DOC, PPT and ZIP.");
+        String fileName = ressource.getUe().getCode()+"_"+ressource.getTypeRessource().getName()+"_"+
+                ressource.getName().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        fileService.deleteFile(ressource.getLink(), "files/"+ressource.getTypeRessource().getName());
+        fileService.storeFile(file, fileName, "files/"+ressource.getTypeRessource().getName());
+        ressource.setLink(fileName);
+        ressource.setUpdatedAt(Instant.now());
         return ressourceMapper.ressourceToRessourceResponseDTO(ressourceRepository.save(ressource));
     }
 
@@ -113,6 +167,7 @@ public class RessourceServiceImpl implements RessourceService {
         Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
         if(ressource != null){
             ressourceRepository.deleteById(ressourceId);
+            fileService.deleteFile(ressource.getLink(), "files/"+ressource.getTypeRessource().getName());
         }
         else throw new RessourceNotFoundException("Ressource Not Exist!");
     }
