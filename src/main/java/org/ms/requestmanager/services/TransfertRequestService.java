@@ -9,6 +9,7 @@ public interface TransfertRequestService {
     TransfertRequestResponseDTO getTransfertRequest(Long transfertRequestId);
     List<TransfertRequestResponseDTO> getAllTransfertRequests();
     List<TransfertRequestResponseDTO> getAllTransfertRequestsByRequest(Long requestId);
+    List<TransfertRequestResponseDTO> getAllTransfertRequestsByRequestAndPersonal(Long requestId, Long personalId);
     List<TransfertRequestResponseDTO> getAllTransfertRequestsByPersonal(Long personalId);
     TransfertRequestResponseDTO updateTransfertRequest(Long transfertRequestId, TransfertRequestRequestDTO transfertRequestRequestDTO);
     void deleteTransfertRequest(Long transfertRequestId);

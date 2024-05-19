@@ -5,6 +5,5 @@ import lombok.Data;
 @Data
 public class AttachmentRequestDTO {
     private String name;
-    private String link;
     private Long requestId;
 }

@@ -33,6 +33,10 @@ public class UeRestAPI {
     public List<UeResponseDTO> allUesByLevel(@PathVariable Long levelId){
         return ueService.getAllUesByLevel(levelId);
     }
+    @GetMapping(path = "/ues/level/{levelId}/semester/{semester}")
+    public List<UeResponseDTO> allUesByLevelAndSemester(@PathVariable Long levelId, @PathVariable Long semester){
+        return ueService.getAllUesByLevelAndSemester(levelId, semester);
+    }
     @GetMapping(path = "/ues/personal/{personalId}")
     public List<UeResponseDTO> allUesByPersonal(@PathVariable Long personalId){
         return ueService.getAllUesByPersonal(personalId);

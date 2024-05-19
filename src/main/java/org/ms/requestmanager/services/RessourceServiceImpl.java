@@ -79,6 +79,7 @@ public class RessourceServiceImpl implements RessourceService {
     public ResponseEntity<byte[]> getRessourceFile(Long ressourceId) {
         Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
         if(ressource == null) throw new RessourceNotFoundException("Ressource Not Found!");
+        if(ressource.getLink() == null) throw new RessourceNotFoundException("No file for this ressource!");
         return fileService.getFile("files/"+ressource.getTypeRessource().getName(), ressource.getLink());
     }
 
@@ -86,6 +87,7 @@ public class RessourceServiceImpl implements RessourceService {
     public Path getRessourcePathFile(Long ressourceId) {
         Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
         if(ressource == null) throw new RessourceNotFoundException("Ressource Not Found!");
+        if(ressource.getLink() == null) throw new RessourceNotFoundException("No file for this ressource!");
         return fileService.getPathFile("files/"+ressource.getTypeRessource().getName(), ressource.getLink());
     }
 
@@ -155,7 +157,8 @@ public class RessourceServiceImpl implements RessourceService {
         String fileName = ressource.getUe().getCode()+"_"+ressource.getTypeRessource().getName()+"_"+
                 ressource.getName().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
                 new Date().getTime()+"."+extensionFile;
-        fileService.deleteFile(ressource.getLink(), "files/"+ressource.getTypeRessource().getName());
+        if(ressource.getLink() != null)
+            fileService.deleteFile(ressource.getLink(), "files/"+ressource.getTypeRessource().getName());
         fileService.storeFile(file, fileName, "files/"+ressource.getTypeRessource().getName());
         ressource.setLink(fileName);
         ressource.setUpdatedAt(Instant.now());
@@ -166,7 +169,7 @@ public class RessourceServiceImpl implements RessourceService {
     public void deleteRessource(Long ressourceId) {
         Ressource ressource = ressourceRepository.findById(ressourceId).orElse(null);
         if(ressource != null){
-            ressourceRepository.deleteById(ressourceId);
+            if(ressource.getLink() != null) ressourceRepository.deleteById(ressourceId);
             fileService.deleteFile(ressource.getLink(), "files/"+ressource.getTypeRessource().getName());
         }
         else throw new RessourceNotFoundException("Ressource Not Exist!");

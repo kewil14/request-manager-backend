@@ -1,5 +1,7 @@
 package org.ms.requestmanager.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ms.requestmanager.dto.AttachmentRequestDTO;
 import org.ms.requestmanager.dto.AttachmentResponseDTO;
 import org.ms.requestmanager.entities.Attachment;
@@ -8,10 +10,14 @@ import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.AttachmentMapper;
 import org.ms.requestmanager.repositories.AttachmentRepository;
 import org.ms.requestmanager.repositories.RequestRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,15 +27,18 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentMapper attachmentMapper;
     private final RequestRepository requestRepository;
+    private final FileService fileService;
 
-    public AttachmentServiceImpl(AttachmentRepository attachmentRepository, AttachmentMapper attachmentMapper, RequestRepository requestRepository) {
+    public AttachmentServiceImpl(AttachmentRepository attachmentRepository, AttachmentMapper attachmentMapper, RequestRepository requestRepository, FileService fileService) {
         this.attachmentRepository = attachmentRepository;
         this.attachmentMapper = attachmentMapper;
         this.requestRepository = requestRepository;
+        this.fileService = fileService;
     }
 
     @Override
-    public AttachmentResponseDTO saveAttachment(AttachmentRequestDTO attachmentRequestDTO) {
+    public AttachmentResponseDTO saveAttachment(MultipartFile file, String attachmentIn) throws JsonProcessingException {
+        AttachmentRequestDTO attachmentRequestDTO = new ObjectMapper().readValue(attachmentIn, AttachmentRequestDTO.class);
         //Vérifier que tous les paramètres ont été reçus
         if(attachmentRequestDTO.getName().equals("") || attachmentRequestDTO.getRequestId() == null)
             throw new RessourceNotFoundException("Data required not received.");
@@ -46,6 +55,15 @@ public class AttachmentServiceImpl implements AttachmentService {
         Attachment attachment = attachmentMapper.attachmentRequestDTOToAttachment(attachmentRequestDTO);
         attachment.setCreatedAt(Instant.now());
         attachment.setRequest(request);
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("pdf")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : PDF.");
+        String fileName = "request_"+attachment.getRequest().getId()+"_attachment_"+
+                attachment.getName().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        fileService.storeFile(file, fileName, "files/attachments");
+        attachment.setLink(fileName);
         return attachmentMapper.attachmentToAttachmentResponseDTO(attachmentRepository.save(attachment));
     }
 
@@ -54,6 +72,22 @@ public class AttachmentServiceImpl implements AttachmentService {
         Attachment attachment = attachmentRepository.findById(attachmentId).orElse(null);
         if(attachment == null) throw new RessourceNotFoundException("Attachment Not Found!");
         return attachmentMapper.attachmentToAttachmentResponseDTO(attachment);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getAttachmentFile(Long attachmentId) {
+        Attachment attachment = attachmentRepository.findById(attachmentId).orElse(null);
+        if(attachment == null) throw new RessourceNotFoundException("attachment Not Found!");
+        if(attachment.getLink() == null) throw new RessourceNotFoundException("No file for this attachment!");
+        return fileService.getFile("files/attachments", attachment.getLink());
+    }
+
+    @Override
+    public Path getAttachmentPathFile(Long attachmentId) {
+        Attachment attachment = attachmentRepository.findById(attachmentId).orElse(null);
+        if(attachment == null) throw new RessourceNotFoundException("attachment Not Found!");
+        if(attachment.getLink() == null) throw new RessourceNotFoundException("No file for this attachment!");
+        return fileService.getPathFile("files/attachments", attachment.getLink());
     }
 
     @Override
@@ -97,6 +131,26 @@ public class AttachmentServiceImpl implements AttachmentService {
         attachment.setRequest(request);
         attachment.setCreatedAt(attachmentLast.getCreatedAt());
         attachment.setUpdatedAt(Instant.now());
+        attachment.setLink(attachmentLast.getLink());
+        return attachmentMapper.attachmentToAttachmentResponseDTO(attachmentRepository.save(attachment));
+    }
+
+    @Override
+    public AttachmentResponseDTO updateAttachmentFile(Long attachmentId, MultipartFile file) {
+        //Vérifier si l'élément à modifier existe déjà à partir de l'id
+        Attachment attachment = attachmentRepository.findById(attachmentId).orElse(null);
+        if(attachment == null) throw new RessourceNotFoundException("Ressource not exist!");
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("pdf")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : PDF.");
+        String fileName = "request_"+attachment.getRequest().getId()+"_attachment_"+
+                attachment.getName().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        if(attachment.getLink() != null) fileService.deleteFile(attachment.getLink(), "files/attachments");
+        fileService.storeFile(file, fileName, "files/attachments");
+        attachment.setLink(fileName);
+        attachment.setUpdatedAt(Instant.now());
         return attachmentMapper.attachmentToAttachmentResponseDTO(attachmentRepository.save(attachment));
     }
 
@@ -104,6 +158,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     public void deleteAttachment(Long attachmentId) {
         Attachment attachment = attachmentRepository.findById(attachmentId).orElse(null);
         if(attachment != null){
+            fileService.deleteFile(attachment.getLink(), "files/attachments");
             attachmentRepository.deleteById(attachmentId);
         }
         else throw new RessourceNotFoundException("Attachment Not Exist!");

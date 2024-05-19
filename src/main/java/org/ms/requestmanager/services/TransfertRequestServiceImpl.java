@@ -78,6 +78,18 @@ public class TransfertRequestServiceImpl implements TransfertRequestService {
     }
 
     @Override
+    public List<TransfertRequestResponseDTO> getAllTransfertRequestsByRequestAndPersonal(Long requestId, Long personalId) {
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if(request == null) throw new RessourceNotFoundException("Request Not Found for this requestId!");
+        Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this Personal Id!");
+        List<TransfertRequest> transfertRequests = transfertRequestRepository.findByRequestAndPersonal(request, personal);
+        return transfertRequests.stream()
+                .map(transfertRequestMapper::transfertRequestToTransfertRequestResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<TransfertRequestResponseDTO> getAllTransfertRequestsByPersonal(Long personalId) {
         Personal personal = personalRepository.findById(personalId).orElse(null);
         if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this Personal Id!");

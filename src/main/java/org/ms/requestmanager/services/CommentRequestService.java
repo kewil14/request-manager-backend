@@ -10,6 +10,9 @@ public interface CommentRequestService {
     List<CommentRequestResponseDTO> getAllCommentRequests();
     List<CommentRequestResponseDTO> getAllCommentRequestsByRequest(Long requestId);
     List<CommentRequestResponseDTO> getAllCommentRequestsByPersonal(Long personalId);
+    List<CommentRequestResponseDTO> getAllCommentRequestsByStudent(Long studentId);
+    List<CommentRequestResponseDTO> getAllCommentRequestsByRequestAndPersonal(Long requestId, Long personalId);
+    List<CommentRequestResponseDTO> getAllCommentRequestsByRequestAndStudent(Long requestId, Long studentId);
     CommentRequestResponseDTO updateCommentRequest(Long commentRequestId, CommentRequestRequestDTO commentRequestRequestDTO, int mode);
     void deleteCommentRequest(Long commentRequestId);
 }

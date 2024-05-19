@@ -104,6 +104,40 @@ public class CommentRequestServiceImpl implements CommentRequestService {
     }
 
     @Override
+    public List<CommentRequestResponseDTO> getAllCommentRequestsByStudent(Long studentId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("Student Not Found for this Student Id!");
+        List<CommentRequest> commentRequests = commentRequestRepository.findByStudent(student);
+        return commentRequests.stream()
+                .map(commentRequestMapper::commentRequestToCommentRequestResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CommentRequestResponseDTO> getAllCommentRequestsByRequestAndPersonal(Long requestId, Long personalId) {
+        Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this Personal Id!");
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if(request == null) throw new RessourceNotFoundException("Request Not Found for this requestId!");
+        List<CommentRequest> commentRequests = commentRequestRepository.findByRequestAndPersonal(request, personal);
+        return commentRequests.stream()
+                .map(commentRequestMapper::commentRequestToCommentRequestResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CommentRequestResponseDTO> getAllCommentRequestsByRequestAndStudent(Long requestId, Long studentId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("Student Not Found for this Student Id!");
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if(request == null) throw new RessourceNotFoundException("Request Not Found for this requestId!");
+        List<CommentRequest> commentRequests = commentRequestRepository.findByRequestAndStudent(request, student);
+        return commentRequests.stream()
+                .map(commentRequestMapper::commentRequestToCommentRequestResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CommentRequestResponseDTO updateCommentRequest(Long commentRequestId, CommentRequestRequestDTO commentRequestRequestDTO, int mode) {
         //Vérifier que tous les paramètres sont bien reçus
         if(commentRequestRequestDTO.getMessage().equals("") || commentRequestRequestDTO.getRequestId() == null

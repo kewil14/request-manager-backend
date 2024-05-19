@@ -37,6 +37,18 @@ public class CommentRequestRestAPI {
     public List<CommentRequestResponseDTO> allCommentRequestsByPersonal(@PathVariable Long personalId){
         return commentRequestService.getAllCommentRequestsByPersonal(personalId);
     }
+    @GetMapping(path = "/commentRequests/student/{studentId}")
+    public List<CommentRequestResponseDTO> allCommentRequestsByStudent(@PathVariable Long studentId){
+        return commentRequestService.getAllCommentRequestsByStudent(studentId);
+    }
+    @GetMapping(path = "/commentRequests/request/{requestId}/personal/{personalId}")
+    public List<CommentRequestResponseDTO> allCommentRequestsByRequestAndPersonal(@PathVariable Long requestId, @PathVariable Long personalId){
+        return commentRequestService.getAllCommentRequestsByRequestAndPersonal(requestId, personalId);
+    }
+    @GetMapping(path = "/commentRequests/request/{requestId}/student/{studentId}")
+    public List<CommentRequestResponseDTO> allCommentRequestsByRequestAndStudent(@PathVariable Long requestId, @PathVariable Long studentId){
+        return commentRequestService.getAllCommentRequestsByRequestAndStudent(requestId, studentId);
+    }
     @PutMapping(path = "/commentRequests/{mode}/{id}")
     public CommentRequestResponseDTO updateCommentRequest(@PathVariable Long id, @RequestBody CommentRequestRequestDTO commentRequestRequestDTO, @PathVariable int mode ){
         return commentRequestService.updateCommentRequest(id, commentRequestRequestDTO,mode);

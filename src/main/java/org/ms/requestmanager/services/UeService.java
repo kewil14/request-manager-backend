@@ -9,6 +9,7 @@ public interface UeService {
     UeResponseDTO getUe(Long ueId);
     List<UeResponseDTO> getAllUes();
     List<UeResponseDTO> getAllUesByLevel(Long levelId);
+    List<UeResponseDTO> getAllUesByLevelAndSemester(Long levelId, Long semester);
     List<UeResponseDTO> getAllUesByPersonal(Long personalId);
     UeResponseDTO updateUe(Long ueId, UeRequestDTO ueRequestDTO);
     void deleteUe(Long ueId);

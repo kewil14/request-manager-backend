@@ -138,6 +138,14 @@ public class DepartmentServiceImpl implements DepartmentService {
                 throw new RessourceNotFoundException("Error : Level Exist for this Department Id!");
             if(!personalRepository.findByDepartment(department).isEmpty())
                 throw new RessourceNotFoundException("Error : Personal Exist for this Department Id!");
+            String namedept = department.getName().
+                    replace(":", "_").
+                    replace(".", "_").
+                    replace(" ", "_");
+            if(department.getLinkTimetableS1() != null)
+                fileService.deleteFile(department.getLinkTimetableS1(),"files/timetable/"+namedept);
+            if(department.getLinkTimetableS2() != null)
+                fileService.deleteFile(department.getLinkTimetableS2(),"files/timetable/"+namedept);
             departmentRepository.deleteById(departmentId);
         }
         else throw new RessourceNotFoundException("Department Not Exist!");

@@ -9,6 +9,7 @@ import java.time.Instant;
 public class AttachmentResponseDTO {
     private Long id;
     private String name;
+    private String link;
     private Request request;
     private Instant createdAt;
     private Instant updatedAt;

@@ -11,4 +11,5 @@ public interface UeRepository extends JpaRepository<Ue, Long> {
     Ue findByCode(String code);
     List<Ue> findByLevel(Level level);
     List<Ue> findByPersonal(Personal personal);
+    List<Ue> findByLevelAndSemester(Level level, Long semester);
 }

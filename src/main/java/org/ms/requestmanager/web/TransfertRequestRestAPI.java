@@ -33,6 +33,10 @@ public class TransfertRequestRestAPI {
     public List<TransfertRequestResponseDTO> allTransfertRequestsByRequest(@PathVariable Long requestId){
         return transfertRequestService.getAllTransfertRequestsByRequest(requestId);
     }
+    @GetMapping(path = "/transfertRequests/request/{requestId}/personal/{personalId}")
+    public List<TransfertRequestResponseDTO> allTransfertRequestsByRequestAndPersonal(@PathVariable Long requestId, @PathVariable Long personalId){
+        return transfertRequestService.getAllTransfertRequestsByRequestAndPersonal(requestId, personalId);
+    }
     @GetMapping(path = "/transfertRequests/personal/{personalId}")
     public List<TransfertRequestResponseDTO> allTransfertRequestsByPersonal(@PathVariable Long personalId){
         return transfertRequestService.getAllTransfertRequestsByPersonal(personalId);

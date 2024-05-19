@@ -40,6 +40,9 @@ public class UeServiceImpl implements UeService {
         if(ueRequestDTO.getCode().equals("") || ueRequestDTO.getTitle().equals("") || ueRequestDTO.getSemester() == null
                 || ueRequestDTO.getLevelId() == null || ueRequestDTO.getPersonalId() == null)
             throw new RessourceNotFoundException("Data required not received.");
+        //Vérifier le semestre
+        if(!(ueRequestDTO.getSemester()==1L || ueRequestDTO.getSemester()==2L))
+            throw new RessourceNotFoundException("Semester value must be 1 or 2.");
         //Vérifier si le code reçu n'existe pas déjà
         Ue aC = ueRepository.findByCode(ueRequestDTO.getCode());
         if(aC!=null) throw new RessourceNotFoundException("Code already exist");
@@ -83,6 +86,19 @@ public class UeServiceImpl implements UeService {
     }
 
     @Override
+    public List<UeResponseDTO> getAllUesByLevelAndSemester(Long levelId, Long semester) {
+        Level level = levelRepository.findById(levelId).orElse(null);
+        if(level == null) throw new RessourceNotFoundException("Level Not Found for this levelId!");
+        //Vérifier le semestre
+        if(!(semester==1L || semester==2L))
+            throw new RessourceNotFoundException("Semester value must be 1 or 2.");
+        List<Ue> ues = ueRepository.findByLevelAndSemester(level,semester);
+        return ues.stream()
+                .map(ueMapper::ueToUeResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<UeResponseDTO> getAllUesByPersonal(Long personalId) {
         Personal personal = personalRepository.findById(personalId).orElse(null);
         if(personal == null) throw new RessourceNotFoundException("Personal Not Found for this personalId!");
@@ -98,6 +114,9 @@ public class UeServiceImpl implements UeService {
         if(ueRequestDTO.getCode().equals("") || ueRequestDTO.getTitle().equals("") || ueRequestDTO.getSemester() ==null
                 || ueRequestDTO.getLevelId() == null || ueRequestDTO.getPersonalId() == null)
             throw new RessourceNotFoundException("Data required not received.");
+        //Vérifier le semestre
+        if(!(ueRequestDTO.getSemester()==1L || ueRequestDTO.getSemester()==2L))
+            throw new RessourceNotFoundException("Semester value must be 1 or 2.");
         //Vérifier si l'élément à modifier existe déjà à partir de l'id
         Ue ueLast = ueRepository.findById(ueId).orElse(null);
         if(ueLast == null) throw new RessourceNotFoundException("Ue not exist!");
