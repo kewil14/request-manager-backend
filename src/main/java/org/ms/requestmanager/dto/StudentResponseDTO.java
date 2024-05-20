@@ -12,6 +12,8 @@ public class StudentResponseDTO {
     private String matricule;
     private String firstname;
     private String lastname;
+    private String email;
+    private String picture;
     private Level level;
     private AppUser appUser;
     private Instant createdAt;

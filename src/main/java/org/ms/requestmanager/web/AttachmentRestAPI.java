@@ -33,7 +33,6 @@ public class AttachmentRestAPI {
     public ResponseEntity<byte[]> getAttachmentFile(@PathVariable Long id) {
         return attachmentService.getAttachmentFile(id);
     }
-
     @GetMapping(path = "/attachments/pathfile/{id}")
     public Path getAttachmentPathFile(@PathVariable Long id) {
         return attachmentService.getAttachmentPathFile(id);

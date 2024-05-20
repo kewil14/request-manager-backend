@@ -1,5 +1,7 @@
 package org.ms.requestmanager.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ms.requestmanager.dto.StudentRequestDTO;
 import org.ms.requestmanager.dto.StudentResponseDTO;
 import org.ms.requestmanager.entities.AppUser;
@@ -8,10 +10,14 @@ import org.ms.requestmanager.entities.Student;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.StudentMapper;
 import org.ms.requestmanager.repositories.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,17 +29,20 @@ public class StudentServiceImpl implements StudentService {
     private final LevelRepository levelRepository;
     private final RequestRepository requestRepository;
     private final AppUserRepository appUserRepository;
+    private final FileService fileService;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LevelRepository levelRepository, RequestRepository requestRepository, AppUserRepository appUserRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LevelRepository levelRepository, RequestRepository requestRepository, AppUserRepository appUserRepository, FileService fileService) {
         this.studentRepository = studentRepository;
         this.studentMapper = studentMapper;
         this.levelRepository = levelRepository;
         this.requestRepository = requestRepository;
         this.appUserRepository = appUserRepository;
+        this.fileService = fileService;
     }
 
     @Override
-    public StudentResponseDTO saveStudent(StudentRequestDTO studentRequestDTO) {
+    public StudentResponseDTO saveStudent(MultipartFile file, String studentIn) throws JsonProcessingException {
+        StudentRequestDTO studentRequestDTO = new ObjectMapper().readValue(studentIn, StudentRequestDTO.class);
         //Vérifier que tous les paramètres ont été reçus
         if(studentRequestDTO.getMatricule().equals("") || studentRequestDTO.getFirstname().equals("")
                 || studentRequestDTO.getLevelId() == null)
@@ -51,13 +60,23 @@ public class StudentServiceImpl implements StudentService {
             if(appUser == null) throw new RessourceNotFoundException("User Not Found for this UserId!");
             //Vérifier si l'user reçu n'est pas déjà associé
             Student s = studentRepository.findByAppUser(appUser);
-            if(s!=null) throw new RessourceNotFoundException("User has already linked to Personal");
+            if(s!=null) throw new RessourceNotFoundException("User has already linked to Student");
         }
         //Faire le mapping et enregistrer
         Student student = studentMapper.studentRequestDTOToStudent(studentRequestDTO);
         student.setCreatedAt(Instant.now());
         student.setLevel(level);
         student.setAppUser(appUser);
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("jpg") || extensionFile.equals("jpeg") || extensionFile.equals("png") || extensionFile.equals("svg")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : jpg, jpeg, png & svg.");
+        String fileName = "picture_"+
+                student.getFirstname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                student.getLastname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        fileService.storeFile(file, fileName, "files/pictures");
+        student.setPicture(fileName);
         return studentMapper.studentToStudentResponseDTO(studentRepository.save(student));
     }
 
@@ -66,6 +85,22 @@ public class StudentServiceImpl implements StudentService {
         Student student = studentRepository.findById(studentId).orElse(null);
         if(student == null) throw new RessourceNotFoundException("Student Not Found!");
         return studentMapper.studentToStudentResponseDTO(student);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getStudentPicture(Long studentId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("student Not Found!");
+        if(student.getPicture() == null) throw new RessourceNotFoundException("No picture for this student!");
+        return fileService.getFile("files/pictures", student.getPicture());
+    }
+
+    @Override
+    public Path getStudentPathPicture(Long studentId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("student Not Found!");
+        if(student.getPicture() == null) throw new RessourceNotFoundException("No picture for this student!");
+        return fileService.getPathFile("files/pictures", student.getPicture());
     }
 
     @Override
@@ -119,7 +154,7 @@ public class StudentServiceImpl implements StudentService {
             //Vérifier si l'user reçu n'est pas déjà associé s'il a été modifié
             if(!(appUser == studentLast.getAppUser())){
                 Student s = studentRepository.findByAppUser(appUser);
-                if(s!=null) throw new RessourceNotFoundException("User has already linked to Personal");
+                if(s!=null) throw new RessourceNotFoundException("User has already linked to Student");
             }
         }
         //Faire la sauvegarde
@@ -129,6 +164,26 @@ public class StudentServiceImpl implements StudentService {
         student.setUpdatedAt(Instant.now());
         student.setAppUser(appUser);
         student.setLevel(level);
+        return studentMapper.studentToStudentResponseDTO(studentRepository.save(student));
+    }
+
+    @Override
+    public StudentResponseDTO updateStudentPicture(Long studentId, MultipartFile file) {
+        //Vérifier si l'élément à modifier existe déjà à partir de l'id
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if(student == null) throw new RessourceNotFoundException("Student not exist!");
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("jpg") || extensionFile.equals("jpeg") || extensionFile.equals("png") || extensionFile.equals("svg")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : jpg, jpeg, png & svg.");
+        String fileName = "picture_"+
+                student.getFirstname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                student.getLastname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        if(student.getPicture() != null) fileService.deleteFile(student.getPicture(), "files/pictures");
+        fileService.storeFile(file, fileName, "files/pictures");
+        student.setPicture(fileName);
+        student.setUpdatedAt(Instant.now());
         return studentMapper.studentToStudentResponseDTO(studentRepository.save(student));
     }
 

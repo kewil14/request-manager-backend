@@ -26,6 +26,10 @@ public class Student {
 
     private String lastname;
 
+    private String email;
+
+    private String picture;
+
     //One student -- One level
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "levelId")

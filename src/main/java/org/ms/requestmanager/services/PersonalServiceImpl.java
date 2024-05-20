@@ -1,18 +1,21 @@
 package org.ms.requestmanager.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ms.requestmanager.dto.PersonalRequestDTO;
 import org.ms.requestmanager.dto.PersonalResponseDTO;
-import org.ms.requestmanager.entities.AppUser;
-import org.ms.requestmanager.entities.Department;
-import org.ms.requestmanager.entities.Personal;
-import org.ms.requestmanager.entities.TypePersonal;
+import org.ms.requestmanager.entities.*;
 import org.ms.requestmanager.exceptions.RessourceNotFoundException;
 import org.ms.requestmanager.mappers.PersonalMapper;
 import org.ms.requestmanager.repositories.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +31,9 @@ public class PersonalServiceImpl implements PersonalService {
     private final CommentRequestRepository commentRequestRepository;
     private final TransfertRequestRepository transfertRequestRepository;
     private final AppUserRepository appUserRepository;
+    private final FileService fileService;
 
-    public PersonalServiceImpl(PersonalRepository personalRepository, PersonalMapper personalMapper, TypePersonalRepository typePersonalRepository, DepartmentRepository departmentRepository, UeRepository ueRepository, RequestRepository requestRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository, AppUserRepository appUserRepository) {
+    public PersonalServiceImpl(PersonalRepository personalRepository, PersonalMapper personalMapper, TypePersonalRepository typePersonalRepository, DepartmentRepository departmentRepository, UeRepository ueRepository, RequestRepository requestRepository, CommentRequestRepository commentRequestRepository, TransfertRequestRepository transfertRequestRepository, AppUserRepository appUserRepository, FileService fileService) {
         this.personalRepository = personalRepository;
         this.personalMapper = personalMapper;
         this.typePersonalRepository = typePersonalRepository;
@@ -39,10 +43,12 @@ public class PersonalServiceImpl implements PersonalService {
         this.commentRequestRepository = commentRequestRepository;
         this.transfertRequestRepository = transfertRequestRepository;
         this.appUserRepository = appUserRepository;
+        this.fileService = fileService;
     }
 
     @Override
-    public PersonalResponseDTO savePersonal(PersonalRequestDTO personalRequestDTO) {
+    public PersonalResponseDTO savePersonal(MultipartFile file, String personalIn) throws JsonProcessingException {
+        PersonalRequestDTO personalRequestDTO = new ObjectMapper().readValue(personalIn, PersonalRequestDTO.class);
         //Vérifier que tous les paramètres ont été reçus
         if(personalRequestDTO.getGrade().equals("") || personalRequestDTO.getFirstname().equals("")
                 || personalRequestDTO.getTypePersonalId() == null || personalRequestDTO.getDepartmentId() == null)
@@ -68,6 +74,16 @@ public class PersonalServiceImpl implements PersonalService {
         personal.setTypePersonal(typePersonal);
         personal.setDepartment(department);
         personal.setAppUser(appUser);
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("jpg") || extensionFile.equals("jpeg") || extensionFile.equals("png") || extensionFile.equals("svg")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : jpg, jpeg, png & svg.");
+        String fileName = "picture_"+
+                personal.getFirstname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                personal.getLastname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        fileService.storeFile(file, fileName, "files/pictures");
+        personal.setPicture(fileName);
         return personalMapper.personalToPersonalResponseDTO(personalRepository.save(personal));
     }
 
@@ -76,6 +92,22 @@ public class PersonalServiceImpl implements PersonalService {
         Personal personal = personalRepository.findById(personalId).orElse(null);
         if(personal == null) throw new RessourceNotFoundException("Personal Not Found!");
         return personalMapper.personalToPersonalResponseDTO(personal);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getPersonalPicture(Long personalId) {
+        Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("personal Not Found!");
+        if(personal.getPicture() == null) throw new RessourceNotFoundException("No picture for this personal!");
+        return fileService.getFile("files/pictures", personal.getPicture());
+    }
+
+    @Override
+    public Path getPersonalPathPicture(Long personalId) {
+        Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("personal Not Found!");
+        if(personal.getPicture() == null) throw new RessourceNotFoundException("No picture for this personal!");
+        return fileService.getPathFile("files/pictures", personal.getPicture());
     }
 
     @Override
@@ -148,6 +180,26 @@ public class PersonalServiceImpl implements PersonalService {
         personal.setCreatedAt(personalLast.getCreatedAt());
         personal.setUpdatedAt(Instant.now());
         personal.setAppUser(appUser);
+        return personalMapper.personalToPersonalResponseDTO(personalRepository.save(personal));
+    }
+
+    @Override
+    public PersonalResponseDTO updatePersonalPicture(Long personalId, MultipartFile file) {
+        //Vérifier si l'élément à modifier existe déjà à partir de l'id
+        Personal personal = personalRepository.findById(personalId).orElse(null);
+        if(personal == null) throw new RessourceNotFoundException("Personal not exist!");
+        //Sauvegarde du fichier
+        String extensionFile = fileService.getFileExtension(file.getOriginalFilename());
+        if(!(extensionFile.equals("jpg") || extensionFile.equals("jpeg") || extensionFile.equals("png") || extensionFile.equals("svg")))
+            throw new RessourceNotFoundException("Unsupported file extension ! Good Extension : jpg, jpeg, png & svg.");
+        String fileName = "picture_"+
+                personal.getFirstname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                personal.getLastname().replace(":", "_").replace(".", "_").replace(" ", "_")+"_"+
+                new Date().getTime()+"."+extensionFile;
+        if(personal.getPicture() != null) fileService.deleteFile(personal.getPicture(), "files/pictures");
+        fileService.storeFile(file, fileName, "files/pictures");
+        personal.setPicture(fileName);
+        personal.setUpdatedAt(Instant.now());
         return personalMapper.personalToPersonalResponseDTO(personalRepository.save(personal));
     }
 

@@ -25,6 +25,10 @@ public class Personal {
 
     private String lastname;
 
+    private String email;
+
+    private String picture;
+
     //link to one personal to one User
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userId")

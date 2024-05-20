@@ -13,6 +13,8 @@ public class PersonalResponseDTO {
     private String grade;
     private String firstname;
     private String lastname;
+    private String email;
+    private String picture;
     private AppUser appUser;
     private TypePersonal typePersonal;
     private Department department;
