@@ -24,6 +24,10 @@ public class StudentRestAPI {
     public StudentResponseDTO save(@RequestParam("file") MultipartFile file, String studentIn) throws JsonProcessingException {
         return studentService.saveStudent(file, studentIn);
     }
+    @PostMapping(path = "/students/create")
+    public StudentResponseDTO saveUser(@RequestParam("file") MultipartFile file, String studentIn) throws JsonProcessingException {
+        return studentService.saveStudent(file, studentIn);
+    }
     @GetMapping(path = "/students/{id}")
     public StudentResponseDTO getStudent(@PathVariable Long id){
         return studentService.getStudent(id);
